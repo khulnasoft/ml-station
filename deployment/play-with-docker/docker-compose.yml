@@ -1,0 +1,13 @@
+version: '3.2'
+
+services:
+  ml-station:
+    image: khulnasoft/ml-station-minimal
+    restart: always
+    volumes:
+      - ml-station:/workspace
+    ports:
+      - 8080:8080
+
+volumes:
+  ml-station:
