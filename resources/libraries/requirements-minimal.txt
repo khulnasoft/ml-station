@@ -9,7 +9,7 @@ requests==2.32.2 # Python HTTP for Humans.
 urllib3==1.26.19 # HTTP library with thread-safe connection pooling, file post, and more.
 # requests can't use idna >3 yet
 idna==3.7 # Internationalized Domain Names in Applications (IDNA)
-pandas==1.2.5 # Powerful data structures for data analysis, time series, and statistics
+pandas==1.5.3 # Powerful data structures for data analysis, time series, and statistics
 attrs==21.2.0 # Classes Without Boilerplate
 six==1.16.0 # Python 2 and 3 compatibility utilities
 future==0.18.2 # Clean single-source support for Python 3 and 2
