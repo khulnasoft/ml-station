@@ -46,10 +46,10 @@ shortcut_metadata = (
     + url
 )
 call(
-    'printf "' + shortcut_metadata + '" > ' + DESKTOP_PATH + "/jupyter.desktop",
-    shell=True,
-)  # create a link on the Desktop to your Jupyter notebook server
-call("chmod +x " + DESKTOP_PATH + "/jupyter.desktop", shell=True)  # Make executable
+    call(
+        f'printf "{shortcut_metadata}" > {DESKTOP_PATH}/jupyter.desktop && chmod +x {DESKTOP_PATH}/jupyter.desktop',
+        shell=True,
+    )
 call(
     'printf "' + shortcut_metadata + '" > /usr/share/applications/jupyter.desktop',
     shell=True,
