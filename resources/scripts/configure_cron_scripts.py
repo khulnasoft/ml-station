@@ -23,8 +23,9 @@ ENV_RESOURCES_PATH = os.getenv("RESOURCES_PATH", "/resources")
 
 # start check xfdesktop leak process
 call(
-    "python " + ENV_RESOURCES_PATH + "/scripts/check_xfdesktop_leak.py schedule",
+    f"python {ENV_RESOURCES_PATH}/scripts/check_xfdesktop_leak.py schedule",
     shell=True,
+)
 )
 
 # Conifg Backup
