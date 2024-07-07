@@ -70,7 +70,7 @@ if args.mode == "check":
         xfsettingsd_pids = get_process_id("xfsettingsd")
         if len(xfsettingsd_pids) > 1:
             log.info(
-                "Multiple processes found for xfsettingsd: " + str(xfsettingsd_pids)
+                log.info(f"Multiple processes found for xfsettingsd: {xfsettingsd_pids}")
             )
         xfsettingsd_process = psutil.Process(int(xfsettingsd_pids[0]))
 
