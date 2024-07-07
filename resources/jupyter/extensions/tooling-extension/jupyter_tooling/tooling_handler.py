@@ -445,7 +445,7 @@ class StorageCheckHandler(IPythonHandler):
             thread = threading.Thread(target=update_workspace_metadata)
             thread.daemon = True
             thread.start()
-
+            thread.join()
             container_size_in_gb = get_container_size()
 
             if MAX_CONTAINER_SIZE:
