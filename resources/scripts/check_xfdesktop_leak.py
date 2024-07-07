@@ -80,7 +80,7 @@ if args.mode == "check":
                 "Multiple processes found for xfce4-panel: " + str(xfce4panel_pids)
             )
         xfce4panel_process = psutil.Process(int(xfce4panel_pids[0]))
-    except:
+    except psutil.NoSuchProcess:
         # could not find processes
         log.info("Failed to find xfdesktop, xfsettingsd, or xfce4-panel.")
         sys.exit()
