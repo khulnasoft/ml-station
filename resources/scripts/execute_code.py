@@ -43,6 +43,7 @@ start_time = time.time()
 
 log.info("Execute Code...")
 
+
 # Wrapper to print out command
 def call(command):
     log.info("Executing: " + command)
@@ -80,6 +81,7 @@ elif EXECUTE_CODE.lower().startswith(("git+", "svn+", "hg+", "bzr+")):
         import tempfile
 
         code_path = tempfile.mkdtemp()
+
         # automatically remove temp directory if process exits
         def cleanup():
             shutil.rmtree(code_path)

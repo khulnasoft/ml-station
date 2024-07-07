@@ -2,8 +2,8 @@ import argparse
 import datetime
 import subprocess
 
-from universal_build import build_utils
-from universal_build.helpers import build_docker
+from ml_buildkit import build_utils
+from ml_buildkit.helpers import build_docker
 
 REMOTE_IMAGE_PREFIX = "khulnasoft/"
 FLAG_FLAVOR = "flavor"
