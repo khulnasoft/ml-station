@@ -125,7 +125,7 @@ class ToolingHandler(IPythonHandler):
             workspace_tools = []
 
             def tool_is_duplicated(tool_array, tool):
-                """ Tools with same ID should only be added once to the list"""
+                """Tools with same ID should only be added once to the list"""
                 for t in tool_array:
                     if "id" in t and "id" in tool and tool["id"] == t["id"]:
                         return True
@@ -423,28 +423,31 @@ class StorageCheckHandler(IPythonHandler):
 
             result = {
                 "workspaceFolderSizeWarning": False,
-                "containerSizeWarning": False
+                "containerSizeWarning": False,
             }
 
             if not MAX_WORKSPACE_FOLDER_SIZE and not MAX_CONTAINER_SIZE:
                 self.finish(json.dumps(result))
                 return
-            
+
             minutes_since_update = get_minutes_since_size_update()
-            if minutes_since_update is not None and minutes_since_update < CHECK_INTERVAL_MINUTES:
+            if (
+                minutes_since_update is not None
+                and minutes_since_update < CHECK_INTERVAL_MINUTES
+            ):
                 # only run check every 5 minutes
                 self.finish(json.dumps(result))
                 return
-            
+
             # Only run update every two minutes
             # run update in background -> somtimes it might need to much time to run
-            
+
             thread = threading.Thread(target=update_workspace_metadata)
             thread.daemon = True
             thread.start()
 
             container_size_in_gb = get_container_size()
-            
+
             if MAX_CONTAINER_SIZE:
                 if container_size_in_gb > MAX_CONTAINER_SIZE:
                     # Wait for metadata update before showing the warning
@@ -462,7 +465,7 @@ class StorageCheckHandler(IPythonHandler):
                     )
                 else:
                     result["containerSizeWarning"] = False
-            
+
             workspace_folder_size_in_gb = get_workspace_folder_size()
 
             if MAX_WORKSPACE_FOLDER_SIZE:
@@ -482,7 +485,7 @@ class StorageCheckHandler(IPythonHandler):
                     )
                 else:
                     result["workspaceFolderSizeWarning"] = False
-            
+
             self.finish(json.dumps(result))
 
         except Exception as ex:
@@ -528,7 +531,7 @@ def update_workspace_metadata():
     workspace_metadata = {
         "update_timestamp": str(datetime.now()),
         "container_size_in_kb": None,
-        "workspace_folder_size_in_kb": None
+        "workspace_folder_size_in_kb": None,
     }
 
     if MAX_CONTAINER_SIZE:
@@ -536,21 +539,25 @@ def update_workspace_metadata():
         try:
             # exclude all different filesystems/mounts
             workspace_metadata["container_size_in_kb"] = int(
-                subprocess.check_output(["du", "-sx", "--exclude=/proc", "/"]).split()[0].decode("utf-8")
+                subprocess.check_output(["du", "-sx", "--exclude=/proc", "/"])
+                .split()[0]
+                .decode("utf-8")
             )
         except Exception:
             pass
-    
+
     if MAX_WORKSPACE_FOLDER_SIZE:
         # calculate workspace folder size
         try:
             # exclude all different filesystems/mounts
             workspace_metadata["workspace_folder_size_in_kb"] = int(
-                subprocess.check_output(["du", "-sx", WORKSPACE_HOME]).split()[0].decode("utf-8")
+                subprocess.check_output(["du", "-sx", WORKSPACE_HOME])
+                .split()[0]
+                .decode("utf-8")
             )
         except Exception:
             pass
-    
+
     if not os.path.exists(WORKSPACE_CONFIG_FOLDER):
         os.makedirs(WORKSPACE_CONFIG_FOLDER)
 
@@ -599,10 +606,11 @@ def get_minutes_since_size_update():
                 updated_date = datetime.strptime(
                     update_timestamp_str, "%Y-%m-%d %H:%M:%S.%f"
                 )
-                return ((datetime.now() - updated_date).seconds//60)%60
+                return ((datetime.now() - updated_date).seconds // 60) % 60
         except Exception as ex:
             return None
     return None
+
 
 def get_inactive_days():
     # read inactive days from metadata timestamp (update when user is actively using the workspace)
@@ -721,6 +729,7 @@ def cleanup_folder(
         + str(total_cleaned_up_mb)
         + " MB."
     )
+
 
 # ------------- GIT FUNCTIONS ------------------------
 
