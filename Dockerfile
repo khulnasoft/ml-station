@@ -315,15 +315,13 @@ ENV PATH=$CONDA_ROOT/bin:$PATH
 ENV LD_LIBRARY_PATH=$CONDA_ROOT/lib
 
 # Install pyenv to allow dynamic creation of python versions
-RUN git clone https://github.com/pyenv/pyenv.git $RESOURCES_PATH/.pyenv && \
-    # Install pyenv plugins based on pyenv installer
-    git clone https://github.com/pyenv/pyenv-virtualenv.git $RESOURCES_PATH/.pyenv/plugins/pyenv-virtualenv  && \
-    git clone git://github.com/pyenv/pyenv-doctor.git $RESOURCES_PATH/.pyenv/plugins/pyenv-doctor && \
+RUN git config --global http.postBuffer 104857600 && \
+    git clone https://github.com/pyenv/pyenv.git $RESOURCES_PATH/.pyenv && \
+    git clone https://github.com/pyenv/pyenv-virtualenv.git $RESOURCES_PATH/.pyenv/plugins/pyenv-virtualenv && \
+    git clone https://github.com/pyenv/pyenv-doctor.git $RESOURCES_PATH/.pyenv/plugins/pyenv-doctor && \
     git clone https://github.com/pyenv/pyenv-update.git $RESOURCES_PATH/.pyenv/plugins/pyenv-update && \
     git clone https://github.com/pyenv/pyenv-which-ext.git $RESOURCES_PATH/.pyenv/plugins/pyenv-which-ext && \
     apt-get update && \
-    # TODO: lib might contain high vulnerability
-    # Required by pyenv
     apt-get install -y --no-install-recommends libffi-dev && \
     clean-layer.sh
 
@@ -343,7 +341,7 @@ ENV PATH=$HOME/.local/bin:$PATH
 RUN \
     apt-get update && \
     # https://nodejs.org/en/about/releases/ use even numbered releases, i.e. LTS versions
-    curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash - && \
+    curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     # As conda is first in path, the commands 'node' and 'npm' reference to the version of conda.
     # Replace those versions with the newly installed versions of node
@@ -357,7 +355,7 @@ RUN \
     ln -s /usr/bin/node /opt/node/bin/node && \
     ln -s /usr/bin/npm /opt/node/bin/npm && \
     # Update npm
-    /usr/bin/npm install -g npm && \
+    /usr/bin/npm install -g npm@latest && \
     # Install Yarn
     /usr/bin/npm install -g yarn && \
     # Install typescript
@@ -487,9 +485,13 @@ RUN \
 
 ## VS Code Server: https://github.com/codercom/code-server
 COPY resources/tools/vs-code-server.sh $RESOURCES_PATH/tools/vs-code-server.sh
+
+# Ensure the script has execute permissions
+RUN chmod +x $RESOURCES_PATH/tools/vs-code-server.sh
+
+# Run the script and log output, show log on failure
 RUN \
-    /bin/bash $RESOURCES_PATH/tools/vs-code-server.sh --install && \
-    # Cleanup
+    /bin/bash $RESOURCES_PATH/tools/vs-code-server.sh --install > /tmp/vs-code-server-install.log 2>&1 || cat /tmp/vs-code-server-install.log && \
     clean-layer.sh
 
 ## ungit
