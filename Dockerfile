@@ -343,7 +343,7 @@ ENV PATH=$HOME/.local/bin:$PATH
 RUN \
     apt-get update && \
     # Use even-numbered releases, i.e. LTS versions
-    curl -sL https://deb.nodesource.com/setup_20.x | bash - && \
+    curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
     apt-get install -y nodejs && \
     # Replace conda versions with newly installed versions
     rm -f /opt/conda/bin/node && ln -s /usr/bin/node /opt/conda/bin/node && \
@@ -355,8 +355,6 @@ RUN \
     mkdir -p /opt/node/bin && \
     ln -s /usr/bin/node /opt/node/bin/node && \
     ln -s /usr/bin/npm /opt/node/bin/npm && \
-    # Update npm
-    npm install -g npm && \
     # Install Yarn
     npm install -g yarn && \
     # Install typescript
@@ -365,11 +363,8 @@ RUN \
     npm install -g webpack && \
     # Install node-gyp
     npm install -g node-gyp && \
-    # Update all packages to latest version
-    npm update -g && \
     # Cleanup
     clean-layer.sh
-
 
 ENV PATH=/opt/node/bin:$PATH
 
@@ -485,7 +480,7 @@ RUN \
 
 # Install Web Tools - Offered via Jupyter Tooling Plugin
 
-## VS Code Server: https://github.com/codercom/code-server
+# Install VS Code Server
 COPY resources/tools/vs-code-server.sh $RESOURCES_PATH/tools/vs-code-server.sh
 RUN \
     /bin/bash $RESOURCES_PATH/tools/vs-code-server.sh --install && \
