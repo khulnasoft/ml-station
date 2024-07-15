@@ -343,7 +343,7 @@ ENV PATH=$HOME/.local/bin:$PATH
 RUN \
     apt-get update && \
     # Use even-numbered releases, i.e. LTS versions
-    curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+    curl -sL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     # Replace conda versions with newly installed versions
     rm -f /opt/conda/bin/node && ln -s /usr/bin/node /opt/conda/bin/node && \
@@ -369,6 +369,7 @@ RUN \
     npm update -g && \
     # Cleanup
     clean-layer.sh
+
 
 ENV PATH=/opt/node/bin:$PATH
 
