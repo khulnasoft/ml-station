@@ -550,16 +550,10 @@ RUN \
     # Link Conda - All python are linked to the conda instances
     ln -s -f $CONDA_ROOT/bin/python /usr/bin/python && \
     echo "Linked Conda python" && \
-    
-    # Update package lists
     apt-get update && \
     echo "Updated apt-get" && \
-    
-    # Upgrade pip
     pip install --upgrade pip && \
     echo "Upgraded pip" && \
-    
-    # Conditionally install minimal or full conda environment
     if [ "$WORKSPACE_FLAVOR" = "minimal" ]; then \
         echo "Installing minimal conda environment" && \
         conda install -y --update-all 'python='$PYTHON_VERSION nomkl ; \
@@ -567,8 +561,6 @@ RUN \
         echo "Installing full conda environment" && \
         conda install -y --update-all 'python='$PYTHON_VERSION mkl-service mkl ; \
     fi && \
-    
-    # Install common data science packages
     echo "Installing common data science packages" && \
     conda install -y --update-all \
         'python='$PYTHON_VERSION \
@@ -581,55 +573,35 @@ RUN \
         'numpy==1.19.*' \
         scikit-learn \
         numexpr && \
-    
-    # Set conda channel priority
     echo "Setting conda channel priority" && \
     conda config --system --set channel_priority false && \
-    
-    # Install minimal requirements
     echo "Installing minimal requirements" && \
     pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed -r ${RESOURCES_PATH}/libraries/requirements-minimal.txt && \
-    
-    # If minimal flavor, fix permissions and clean up
     if [ "$WORKSPACE_FLAVOR" = "minimal" ]; then \
         echo "Fixing permissions for minimal flavor" && \
         fix-permissions.sh $CONDA_ROOT && \
         clean-layer.sh && \
         exit 0 ; \
     fi && \
-    
-    # Install OpenMPI
     echo "Installing OpenMPI" && \
     apt-get install -y --no-install-recommends libopenmpi-dev openmpi-bin && \
-    
-    # Install additional conda packages
     echo "Installing additional conda packages" && \
     conda install -y --freeze-installed \
         'python='$PYTHON_VERSION \
         boost \
         mkl-include && \
-    
-    # Install mkldnn from mingfeima channel
     echo "Installing mkldnn" && \
     conda install -y --freeze-installed -c mingfeima mkldnn && \
-    
-    # Install PyTorch
     echo "Installing PyTorch" && \
     conda install -y -c pytorch "pytorch==1.9.*" cpuonly && \
-    
-    # Install light requirements
     echo "Installing light requirements" && \
     pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed -r ${RESOURCES_PATH}/libraries/requirements-light.txt && \
-    
-    # If light flavor, fix permissions and clean up
     if [ "$WORKSPACE_FLAVOR" = "light" ]; then \
         echo "Fixing permissions for light flavor" && \
         fix-permissions.sh $CONDA_ROOT && \
         clean-layer.sh && \
         exit 0 ; \
     fi && \
-    
-    # Install additional apt packages
     echo "Installing additional apt packages" && \
     apt-get install -y --no-install-recommends liblapack-dev libatlas-base-dev libeigen3-dev libblas-dev && \
     apt-get install -y --no-install-recommends libhdf5-dev && \
@@ -638,23 +610,15 @@ RUN \
     pip install --no-cache-dir tesserocr && \
     apt-get install -y --no-install-recommends libopenexr-dev && \
     apt-get install -y --no-install-recommends libgomp1 && \
-    
-    # Install additional conda packages
     echo "Installing additional conda packages" && \
     conda install -y --freeze-installed libjpeg-turbo && \
     conda install -y -c bioconda -c conda-forge snakemake-minimal && \
     conda install -y -c conda-forge mamba && \
     conda install -y --freeze-installed faiss-cpu && \
-    
-    # Install full requirements
     echo "Installing full requirements" && \
     pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed --use-deprecated=legacy-resolver -r ${RESOURCES_PATH}/libraries/requirements-full.txt && \
-    
-    # Download spaCy model
     echo "Downloading spaCy model" && \
     python -m spacy download en && \
-    
-    # Fix permissions and clean up
     echo "Fixing permissions and cleaning up" && \
     fix-permissions.sh $CONDA_ROOT && \
     clean-layer.sh

@@ -7951,7 +7951,7 @@ umap-learn==0.5.1
     - threadpoolctl [required: >=2.0.0, installed: 2.1.0]
   - scipy [required: >=1.0, installed: 1.7.0]
     - numpy [required: >=1.16.5,<1.23.0, installed: 1.19.5]
-uvicorn==0.14.0
+uvicorn==0.17.6
   - asgiref [required: >=3.3.4, installed: 3.4.0]
   - click [required: >=7.*, installed: 7.1.2]
   - h11 [required: >=0.8, installed: 0.12.0]
