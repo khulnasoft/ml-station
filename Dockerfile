@@ -547,109 +547,118 @@ COPY resources/libraries ${RESOURCES_PATH}/libraries
 
 ### Install main data science libs
 RUN \
-    # Link Conda - All python are linke to the conda instances
-    # Linking python 3 crashes conda -> cannot install anyting - remove instead
-    # ln -s -f $CONDA_ROOT/bin/python /usr/bin/python3 && \
-    # if removed -> cannot use add-apt-repository
-    # rm /usr/bin/python3 && \
-    # rm /usr/bin/python3.5
+    # Link Conda - All python are linked to the conda instances
     ln -s -f $CONDA_ROOT/bin/python /usr/bin/python && \
+    echo "Linked Conda python" && \
+    
+    # Update package lists
     apt-get update && \
-    # upgrade pip
+    echo "Updated apt-get" && \
+    
+    # Upgrade pip
     pip install --upgrade pip && \
-    # If minimal flavor - install
+    echo "Upgraded pip" && \
+    
+    # Conditionally install minimal or full conda environment
     if [ "$WORKSPACE_FLAVOR" = "minimal" ]; then \
-        # Install nomkl - mkl needs lots of space
+        echo "Installing minimal conda environment" && \
         conda install -y --update-all 'python='$PYTHON_VERSION nomkl ; \
     else \
-        # Install mkl for faster computations
+        echo "Installing full conda environment" && \
         conda install -y --update-all 'python='$PYTHON_VERSION mkl-service mkl ; \
     fi && \
-    # Install some basics - required to run container
+    
+    # Install common data science packages
+    echo "Installing common data science packages" && \
     conda install -y --update-all \
-            'python='$PYTHON_VERSION \
-            'ipython=7.24.*' \
-            'notebook=6.4.*' \
-            'jupyterlab=3.0.*' \
-            # TODO: nbconvert 6.x makes problems with template_path
-            'nbconvert=5.6.*' \
-            # TODO: temp fix: yarl version 1.5 is required for lots of libraries.
-            'yarl==1.5.*' \
-            # TODO install scipy, numpy, sklearn, and numexpr via conda for mkl optimizaed versions: https://docs.anaconda.com/mkl-optimizations/
-            'scipy==1.7.*' \
-            'numpy==1.19.*' \
-            scikit-learn \
-            numexpr && \
-            # installed via apt-get and pip: protobuf \
-            # installed via apt-get: zlib  && \
-    # Switch of channel priority, makes some trouble
+        'python='$PYTHON_VERSION \
+        'ipython=7.24.*' \
+        'notebook=6.4.*' \
+        'jupyterlab=3.0.*' \
+        'nbconvert=5.6.*' \
+        'yarl==1.5.*' \
+        'scipy==1.7.*' \
+        'numpy==1.19.*' \
+        scikit-learn \
+        numexpr && \
+    
+    # Set conda channel priority
+    echo "Setting conda channel priority" && \
     conda config --system --set channel_priority false && \
-    # Install minimal pip requirements
+    
+    # Install minimal requirements
+    echo "Installing minimal requirements" && \
     pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed -r ${RESOURCES_PATH}/libraries/requirements-minimal.txt && \
-    # If minimal flavor - exit here
+    
+    # If minimal flavor, fix permissions and clean up
     if [ "$WORKSPACE_FLAVOR" = "minimal" ]; then \
-        # Remove pandoc - package for markdown conversion - not needed
-        # TODO: conda remove -y --force pandoc && \
-        # Fix permissions
+        echo "Fixing permissions for minimal flavor" && \
         fix-permissions.sh $CONDA_ROOT && \
-        # Cleanup
         clean-layer.sh && \
         exit 0 ; \
     fi && \
-    # OpenMPI support
+    
+    # Install OpenMPI
+    echo "Installing OpenMPI" && \
     apt-get install -y --no-install-recommends libopenmpi-dev openmpi-bin && \
-    conda install -y --freeze-installed  \
+    
+    # Install additional conda packages
+    echo "Installing additional conda packages" && \
+    conda install -y --freeze-installed \
         'python='$PYTHON_VERSION \
         boost \
         mkl-include && \
-    # Install mkldnn
+    
+    # Install mkldnn from mingfeima channel
+    echo "Installing mkldnn" && \
     conda install -y --freeze-installed -c mingfeima mkldnn && \
-    # Install pytorch - cpu only
+    
+    # Install PyTorch
+    echo "Installing PyTorch" && \
     conda install -y -c pytorch "pytorch==1.9.*" cpuonly && \
-    # Install light pip requirements
+    
+    # Install light requirements
+    echo "Installing light requirements" && \
     pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed -r ${RESOURCES_PATH}/libraries/requirements-light.txt && \
-    # If light light flavor - exit here
+    
+    # If light flavor, fix permissions and clean up
     if [ "$WORKSPACE_FLAVOR" = "light" ]; then \
-        # Fix permissions
+        echo "Fixing permissions for light flavor" && \
         fix-permissions.sh $CONDA_ROOT && \
-        # Cleanup
         clean-layer.sh && \
         exit 0 ; \
     fi && \
-    # libartals == 40MB liblapack-dev == 20 MB
+    
+    # Install additional apt packages
+    echo "Installing additional apt packages" && \
     apt-get install -y --no-install-recommends liblapack-dev libatlas-base-dev libeigen3-dev libblas-dev && \
-    # pandoc -> installs libluajit -> problem for openresty
-    # HDF5 (19MB)
     apt-get install -y --no-install-recommends libhdf5-dev && \
-    # TBB threading optimization
     apt-get install -y --no-install-recommends libtbb-dev && \
-    # required for tesseract: 11MB - tesseract-ocr-dev?
     apt-get install -y --no-install-recommends libtesseract-dev && \
     pip install --no-cache-dir tesserocr && \
-    # TODO: installs tenserflow 2.4 - Required for tensorflow graphics (9MB)
     apt-get install -y --no-install-recommends libopenexr-dev && \
-    #pip install --no-cache-dir tensorflow-graphics==2020.5.20 && \
-    # GCC OpenMP (GOMP) support library
     apt-get install -y --no-install-recommends libgomp1 && \
-    # Install Intel(R) Compiler Runtime - numba optimization
-    # TODO: don't install, results in memory error: conda install -y --freeze-installed -c numba icc_rt && \
-    # Install libjpeg turbo for speedup in image processing
+    
+    # Install additional conda packages
+    echo "Installing additional conda packages" && \
     conda install -y --freeze-installed libjpeg-turbo && \
-    # Add snakemake for workflow management
     conda install -y -c bioconda -c conda-forge snakemake-minimal && \
-    # Add mamba as conda alternativ
     conda install -y -c conda-forge mamba && \
-    # Faiss - A library for efficient similarity search and clustering of dense vectors.
     conda install -y --freeze-installed faiss-cpu && \
-    # Install full pip requirements
+    
+    # Install full requirements
+    echo "Installing full requirements" && \
     pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed --use-deprecated=legacy-resolver -r ${RESOURCES_PATH}/libraries/requirements-full.txt && \
-    # Setup Spacy
-    # Spacy - download and large language removal
+    
+    # Download spaCy model
+    echo "Downloading spaCy model" && \
     python -m spacy download en && \
-    # Fix permissions
+    
+    # Fix permissions and clean up
+    echo "Fixing permissions and cleaning up" && \
     fix-permissions.sh $CONDA_ROOT && \
-    # Cleanup
     clean-layer.sh
+
 
 # Fix conda version
 RUN \
