@@ -545,76 +545,20 @@ RUN \
 # Data science libraries requirements
 COPY resources/libraries ${RESOURCES_PATH}/libraries
 
-### Install main data science libs
+# Update conda
+RUN conda update -n base -c defaults conda && \
+    conda config --set channel_priority strict
+
+# Install packages incrementally
 RUN \
-    # Link Conda - All python are linked to the conda instances
-    ln -s -f $CONDA_ROOT/bin/python /usr/bin/python && \
-    echo "Linked Conda python" && \
-    apt-get update && \
-    echo "Updated apt-get" && \
-    pip install --upgrade pip && \
-    echo "Upgraded pip" && \
-    if [ "$WORKSPACE_FLAVOR" = "minimal" ]; then \
-        echo "Installing minimal conda environment" && \
-        conda install -y --update-all 'python='$PYTHON_VERSION nomkl ; \
-    else \
-        echo "Installing full conda environment" && \
-        conda install -y --update-all 'python='$PYTHON_VERSION mkl-service mkl ; \
-    fi && \
-    echo "Installing common data science packages" && \
-    conda install -y --update-all \
-        'python='$PYTHON_VERSION \
-        'ipython=7.24.*' \
-        'notebook=6.4.*' \
-        'jupyterlab=3.0.*' \
-        'nbconvert=5.6.*' \
-        'yarl==1.5.*' \
-        'scipy==1.7.*' \
-        'numpy==1.19.*' \
-        scikit-learn \
-        numexpr && \
+    conda install -y 'python='$PYTHON_VERSION && \
+    conda install -y 'ipython=7.24.*' 'notebook=6.4.*' && \
+    conda install -y 'jupyterlab=3.0.*' 'nbconvert=5.6.*' && \
+    conda install -y 'yarl==1.5.*' 'scipy==1.7.*' 'numpy==1.19.*' scikit-learn numexpr && \
     echo "Setting conda channel priority" && \
-    conda config --system --set channel_priority false && \
-    echo "Installing minimal requirements" && \
-    pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed -r ${RESOURCES_PATH}/libraries/requirements-minimal.txt && \
-    if [ "$WORKSPACE_FLAVOR" = "minimal" ]; then \
-        echo "Fixing permissions for minimal flavor" && \
-        fix-permissions.sh $CONDA_ROOT && \
-        clean-layer.sh && \
-        exit 0 ; \
-    fi && \
-    echo "Installing OpenMPI" && \
-    apt-get install -y --no-install-recommends libopenmpi-dev openmpi-bin && \
-    echo "Installing additional conda packages" && \
-    conda install -y --freeze-installed \
-        'python='$PYTHON_VERSION \
-        boost \
-        mkl-include && \
-    echo "Installing mkldnn" && \
-    conda install -y --freeze-installed -c mingfeima mkldnn && \
-    echo "Installing PyTorch" && \
-    conda install -y -c pytorch "pytorch==1.9.*" cpuonly && \
-    echo "Installing light requirements" && \
-    pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed -r ${RESOURCES_PATH}/libraries/requirements-light.txt && \
-    if [ "$WORKSPACE_FLAVOR" = "light" ]; then \
-        echo "Fixing permissions for light flavor" && \
-        fix-permissions.sh $CONDA_ROOT && \
-        clean-layer.sh && \
-        exit 0 ; \
-    fi && \
-    echo "Installing additional apt packages" && \
-    apt-get install -y --no-install-recommends liblapack-dev libatlas-base-dev libeigen3-dev libblas-dev && \
-    apt-get install -y --no-install-recommends libhdf5-dev && \
-    apt-get install -y --no-install-recommends libtbb-dev && \
-    apt-get install -y --no-install-recommends libtesseract-dev && \
-    pip install --no-cache-dir tesserocr && \
-    apt-get install -y --no-install-recommends libopenexr-dev && \
-    apt-get install -y --no-install-recommends libgomp1 && \
-    echo "Installing additional conda packages" && \
-    conda install -y --freeze-installed libjpeg-turbo && \
-    conda install -y -c bioconda -c conda-forge snakemake-minimal && \
-    conda install -y -c conda-forge mamba && \
-    conda install -y --freeze-installed faiss-cpu && \
+    conda config --system --set channel_priority false \
+
+    # Install full requirements via pip
     echo "Installing full requirements" && \
     pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed --use-deprecated=legacy-resolver -r ${RESOURCES_PATH}/libraries/requirements-full.txt && \
     echo "Downloading spaCy model" && \
