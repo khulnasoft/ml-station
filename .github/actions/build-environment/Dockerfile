@@ -1,4 +1,4 @@
-FROM khulnasoft/build-environment:0.6.8
+FROM khulnasoft/build-environment:0.6.18
 
 # Install basics
 # hadolint ignore=DL3005

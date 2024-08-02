@@ -5869,7 +5869,7 @@ plotly==5.0.0
   - six [required: Any, installed: 1.15.0]
   - tenacity [required: >=6.2.0, installed: 6.3.1]
     - six [required: >=1.9.0, installed: 1.15.0]
-poetry==1.1.7
+poetry==1.1.8
   - cachecontrol [required: >=0.12.4,<0.13.0, installed: 0.12.6]
     - msgpack [required: >=0.5.2, installed: 1.0.2]
     - requests [required: Any, installed: 2.25.1]
@@ -7798,7 +7798,7 @@ torchtext==0.10.0
   - torch [required: ==1.9.0, installed: 1.9.0]
     - typing-extensions [required: Any, installed: 3.7.4]
   - tqdm [required: Any, installed: 4.61.1]
-tox==3.23.1
+tox==3.24.0
   - filelock [required: >=3.0.0, installed: 3.0.12]
   - packaging [required: >=14, installed: 20.9]
     - pyparsing [required: >=2.0.2, installed: 2.4.7]
@@ -7951,7 +7951,7 @@ umap-learn==0.5.1
     - threadpoolctl [required: >=2.0.0, installed: 2.1.0]
   - scipy [required: >=1.0, installed: 1.7.0]
     - numpy [required: >=1.16.5,<1.23.0, installed: 1.19.5]
-uvicorn==0.14.0
+uvicorn==0.17.6
   - asgiref [required: >=3.3.4, installed: 3.4.0]
   - click [required: >=7.*, installed: 7.1.2]
   - h11 [required: >=0.8, installed: 0.12.0]
