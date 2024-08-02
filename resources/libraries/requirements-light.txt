@@ -5,7 +5,7 @@
 # TODO: 2.3.1 version uses tensorboard 2.4.0 with bug with relativ pathes
 # keras: comes preinstalled with tenserflow 2.x
 # scikit-learn installed via conda
-intel-tensorflow==2.12.0 # TensorFlow is an open source machine learning framework for everyone.
+intel-tensorflow==2.14.0 # TensorFlow is an open source machine learning framework for everyone.
 xgboost==1.4.2 # Scalable, Portable and Distributed Gradient Boosting
 statsmodels==0.12.2 # Statistical modeling and econometrics in Python
 mxnet-mkl==1.6.0 # MXNet is an ultra-scalable deep learning framework. This version uses MKLDNN.
@@ -30,7 +30,7 @@ tensorboardX==2.3 # TensorBoardX lets you watch Tensors Flow without Tensorflow
 pandas-profiling==2.13.0 # Generate profile report for pandas DataFrame
 
 ## Others
-pymongo==4.6.3 # Mongo Client
+pymongo==4.8.0 # Mongo Client
 fire==0.4.0 # A library for automatically generating command line interfaces.
 patsy==0.5.1 # A Python package for describing statistical models and for building design matrices.
 boto3==1.17.101 # The AWS SDK for Python
