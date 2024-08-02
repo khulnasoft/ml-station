@@ -20,7 +20,7 @@ Pillow==8.2.0 # Python Imaging Library (Fork)
 pyzmq==22.1.0 # Python bindings for 0MQ
 python-crontab==2.5.1 # Python Crontab API
 cmake==3.20.4 # CMake is an open-source, cross-platform family of tools designed to build, test and package software
-protobuf==3.17.3 # Protocol Buffers
+protobuf==3.18.3 # Protocol Buffers
 
 ## Utilities
 httpie==2.4.0 # HTTPie - a CLI, cURL-like tool for humans.
@@ -68,7 +68,7 @@ pip-tools==6.2.0 # pip-tools keeps your pinned dependencies fresh.
 virtualenvwrapper==4.8.4 # Enhancements to virtualenv
 isort==5.9.1 # A Python utility / library to sort Python imports.
 jedi==0.18.0 # An autocompletion tool for Python that can be used for text editors.
-pipreqs==0.4.10 # Pip requirements.txt generator based on imports in project
+pipreqs==0.4.12 # Pip requirements.txt generator based on imports in project
 mypy==0.910 # Static type checker
 packaging<21.0,>=20.4
 
@@ -84,7 +84,7 @@ tensorboard==2.5.0 # TensorBoard lets you watch Tensors Flow
 
 ## Glances
 psutil==5.8.0 # Cross-platform lib for process and system monitoring in Python.
-bottle==0.12.19 # Fast and simple WSGI-framework for small web-applications.
+bottle==0.12.20 # Fast and simple WSGI-framework for small web-applications.
 netifaces==0.11.0 # Portable network interface information.
 py-cpuinfo==8.0.0 # Get CPU info with pure Python 2 & 3
 glances==3.1.7 # A cross-platform curses-based monitoring tool
@@ -101,4 +101,4 @@ remote_ikernel==0.4.6 # Running IPython kernels through batch queues
 jupyter_contrib_nbextensions==0.5.1 # A collection of Jupyter nbextensions.
 jupyter_nbextensions_configurator==0.4.1 # jupyter serverextension providing configuration interfaces for nbextensions.
 # TODO: jupyter-tensorboard version has a bug and hence does not support tensorboard 2.3 - 2.4 currently -> installed later
-nbdime==3.1.0 # Diff and merge of Jupyter Notebooks
+nbdime==3.1.1 # Diff and merge of Jupyter Notebooks
