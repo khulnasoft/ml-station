@@ -316,14 +316,11 @@ ENV LD_LIBRARY_PATH=$CONDA_ROOT/lib
 
 # Install pyenv to allow dynamic creation of python versions
 RUN git clone https://github.com/pyenv/pyenv.git $RESOURCES_PATH/.pyenv && \
-    # Install pyenv plugins based on pyenv installer
-    git clone https://github.com/pyenv/pyenv-virtualenv.git $RESOURCES_PATH/.pyenv/plugins/pyenv-virtualenv  && \
+    git clone https://github.com/pyenv/pyenv-virtualenv.git $RESOURCES_PATH/.pyenv/plugins/pyenv-virtualenv && \
     git clone https://github.com/pyenv/pyenv-doctor.git $RESOURCES_PATH/.pyenv/plugins/pyenv-doctor && \
     git clone https://github.com/pyenv/pyenv-update.git $RESOURCES_PATH/.pyenv/plugins/pyenv-update && \
     git clone https://github.com/pyenv/pyenv-which-ext.git $RESOURCES_PATH/.pyenv/plugins/pyenv-which-ext && \
     apt-get update && \
-    # TODO: lib might contain high vulnerability
-    # Required by pyenv
     apt-get install -y --no-install-recommends libffi-dev && \
     clean-layer.sh
 
@@ -365,6 +362,7 @@ RUN \
     npm install -g node-gyp && \
     # Cleanup
     clean-layer.sh
+
 
 ENV PATH=/opt/node/bin:$PATH
 
@@ -480,7 +478,7 @@ RUN \
 
 # Install Web Tools - Offered via Jupyter Tooling Plugin
 
-# Install VS Code Server
+## VS Code Server: https://github.com/codercom/code-server
 COPY resources/tools/vs-code-server.sh $RESOURCES_PATH/tools/vs-code-server.sh
 RUN \
     /bin/bash $RESOURCES_PATH/tools/vs-code-server.sh --install && \
@@ -545,28 +543,66 @@ RUN \
 # Data science libraries requirements
 COPY resources/libraries ${RESOURCES_PATH}/libraries
 
-# Update conda
-RUN conda update -n base -c defaults conda && \
-    conda config --set channel_priority strict
+# Install necessary build tools
+RUN apt-get update && apt-get install -y build-essential
 
-# Install packages incrementally
+### Install main data science libs
 RUN \
-    conda install -y 'python='$PYTHON_VERSION && \
-    conda install -y 'ipython=7.24.*' 'notebook=6.4.*' && \
-    conda install -y 'jupyterlab=3.0.*' 'nbconvert=5.6.*' && \
-    conda install -y 'yarl==1.5.*' 'scipy==1.7.*' 'numpy==1.19.*' scikit-learn numexpr && \
-    echo "Setting conda channel priority" && \
-    conda config --system --set channel_priority false \
-
-    # Install full requirements via pip
-    echo "Installing full requirements" && \
+    ln -s -f $CONDA_ROOT/bin/python /usr/bin/python && \
+    apt-get update && \
+    pip install --upgrade pip && \
+    if [ "$WORKSPACE_FLAVOR" = "minimal" ]; then \
+        conda install -y --update-all 'python='$PYTHON_VERSION nomkl ; \
+    else \
+        conda install -y --update-all 'python='$PYTHON_VERSION mkl-service mkl ; \
+    fi && \
+    conda install -y --update-all \
+            'python='$PYTHON_VERSION \
+            'ipython=7.24.*' \
+            'notebook=6.4.*' \
+            'jupyterlab=3.0.*' \
+            'nbconvert=5.6.*' \
+            'yarl==1.5.*' \
+            'scipy==1.7.*' \
+            'numpy==1.19.*' \
+            scikit-learn \
+            numexpr && \
+    conda config --system --set channel_priority false && \
+    pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed -r ${RESOURCES_PATH}/libraries/requirements-minimal.txt && \
+    if [ "$WORKSPACE_FLAVOR" = "minimal" ]; then \
+        fix-permissions.sh $CONDA_ROOT && \
+        clean-layer.sh && \
+        exit 0 ; \
+    fi && \
+    apt-get install -y --no-install-recommends libopenmpi-dev openmpi-bin && \
+    conda install -y --freeze-installed  \
+        'python='$PYTHON_VERSION \
+        boost \
+        mkl-include && \
+    conda install -y --freeze-installed -c mingfeima mkldnn && \
+    conda install -y -c pytorch "pytorch==1.9.*" cpuonly && \
+    pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed -r ${RESOURCES_PATH}/libraries/requirements-light.txt && \
+    if [ "$WORKSPACE_FLAVOR" = "light" ]; then \
+        fix-permissions.sh $CONDA_ROOT && \
+        clean-layer.sh && \
+        exit 0 ; \
+    fi && \
+    apt-get install -y --no-install-recommends liblapack-dev libatlas-base-dev libeigen3-dev libblas-dev && \
+    apt-get install -y --no-install-recommends libhdf5-dev && \
+    apt-get install -y --no-install-recommends libtbb-dev && \
+    apt-get install -y --no-install-recommends libtesseract-dev && \
+    pip install --no-cache-dir tesserocr && \
+    apt-get install -y --no-install-recommends libopenexr-dev && \
+    apt-get install -y --no-install-recommends libgomp1 && \
+    conda install -y --freeze-installed libjpeg-turbo && \
+    conda install -y -c bioconda -c conda-forge snakemake-minimal && \
+    conda install -y -c conda-forge mamba && \
+    conda install -y -c conda-forge cysignals \
+    conda install -y --freeze-installed faiss-cpu && \
     pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed --use-deprecated=legacy-resolver -r ${RESOURCES_PATH}/libraries/requirements-full.txt && \
-    echo "Downloading spaCy model" && \
     python -m spacy download en && \
-    echo "Fixing permissions and cleaning up" && \
     fix-permissions.sh $CONDA_ROOT && \
     clean-layer.sh
-
 
 # Fix conda version
 RUN \
@@ -1054,8 +1090,8 @@ LABEL \
     "org.opencontainers.image.source"="https://github.com/khulnasoft/ml-station" \
     # "org.opencontainers.image.licenses"="Apache-2.0" \
     "org.opencontainers.image.version"=$WORKSPACE_VERSION \
-    "org.opencontainers.image.vendor"="KhulnaSoft" \
-    "org.opencontainers.image.authors"="Md Sulaiman & Benjamin Raethlein" \
+    "org.opencontainers.image.vendor"="ML Station" \
+    "org.opencontainers.image.authors"="Lukas Masuch & Benjamin Raethlein" \
     "org.opencontainers.image.revision"=$ARG_VCS_REF \
     "org.opencontainers.image.created"=$ARG_BUILD_DATE \
     # Label Schema Convention (deprecated): http://label-schema.org/rc1/
@@ -1064,7 +1100,7 @@ LABEL \
     "org.label-schema.usage"="https://github.com/khulnasoft/ml-station" \
     "org.label-schema.url"="https://github.com/khulnasoft/ml-station" \
     "org.label-schema.vcs-url"="https://github.com/khulnasoft/ml-station" \
-    "org.label-schema.vendor"="KhulnaSoft" \
+    "org.label-schema.vendor"="ML Station" \
     "org.label-schema.version"=$WORKSPACE_VERSION \
     "org.label-schema.schema-version"="1.0" \
     "org.label-schema.vcs-ref"=$ARG_VCS_REF \
