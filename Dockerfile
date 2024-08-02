@@ -546,23 +546,22 @@ RUN \
 COPY resources/libraries ${RESOURCES_PATH}/libraries
 
 ### Install main data science libs
-RUN \
-    # Link Conda - All python are linked to the conda instances
-    ln -s -f $CONDA_ROOT/bin/python /usr/bin/python && \
-    echo "Linked Conda python" && \
-    apt-get update && \
-    echo "Updated apt-get" && \
-    pip install --upgrade pip && \
-    echo "Upgraded pip" && \
-    if [ "$WORKSPACE_FLAVOR" = "minimal" ]; then \
-        echo "Installing minimal conda environment" && \
-        conda install -y --update-all 'python='$PYTHON_VERSION nomkl ; \
+# Example: Breaking down the installation into smaller steps
+RUN ln -s -f $CONDA_ROOT/bin/python /usr/bin/python && \
+    echo "Linked Conda python"
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libopenmpi-dev openmpi-bin
+
+# Install minimal or full conda environment
+RUN if [ "$WORKSPACE_FLAVOR" = "minimal" ]; then \
+        conda install -y --update-all 'python='$PYTHON_VERSION nomkl; \
     else \
-        echo "Installing full conda environment" && \
-        conda install -y --update-all 'python='$PYTHON_VERSION mkl-service mkl ; \
-    fi && \
-    echo "Installing common data science packages" && \
-    conda install -y --update-all \
+        conda install -y --update-all 'python='$PYTHON_VERSION mkl-service mkl; \
+    fi
+
+# Install common data science packages
+RUN conda install -y --update-all \
         'python='$PYTHON_VERSION \
         'ipython=7.24.*' \
         'notebook=6.4.*' \
