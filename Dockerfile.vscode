@@ -1,0 +1,63 @@
+# Use a newer base image
+FROM ubuntu:20.04
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV CONDA_DIR=/opt/conda
+ENV RESOURCES_PATH=resources
+ENV WORKSPACE_FLAVOR=minimal
+ENV CONDA_ROOT=/opt/conda \
+    PYTHON_VERSION="3.8.10" \
+    MINICONDA_VERSION=4.9.2 \
+    MINICONDA_MD5=122c8c9beb51e124ab32a0fa6426c656 \
+    CONDA_VERSION=4.9.2
+
+# Install required dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    apt-transport-https \
+    software-properties-common \
+    libasound2 \
+    libgtk-3-0 \
+    libx11-xcb1 \
+    libxss1 \
+    libnss3 \
+    libgconf-2-4 \
+    libxkbfile1 \
+    libsecret-1-0 \
+    libnotify4 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Visual Studio Code if not using minimal flavor
+COPY resources/tools/vs-code-desktop.sh $RESOURCES_PATH/tools/vs-code-desktop.sh
+RUN if [ "$WORKSPACE_FLAVOR" != "minimal" ]; then \
+        /bin/bash $RESOURCES_PATH/tools/vs-code-desktop.sh --install && \
+        clean-layer.sh; \
+    fi
+
+# Install Miniconda
+RUN wget --no-verbose https://repo.anaconda.com/miniconda/Miniconda3-py38_${CONDA_VERSION}-Linux-x86_64.sh -O /root/miniconda.sh && \
+    ls -l /root/miniconda.sh && \
+    # Check the downloaded file's MD5 sum
+    echo "${MINICONDA_MD5} /root/miniconda.sh" | md5sum -c - || (echo "MD5 mismatch or file not found" && exit 1) && \
+    /bin/bash /root/miniconda.sh -b -p $CONDA_ROOT && \
+    rm /root/miniconda.sh && \
+    $CONDA_ROOT/bin/conda config --system --add channels conda-forge && \
+    $CONDA_ROOT/bin/conda config --system --set auto_update_conda False && \
+    $CONDA_ROOT/bin/conda config --system --set show_channel_urls True && \
+    $CONDA_ROOT/bin/conda config --system --set channel_priority strict && \
+    $CONDA_ROOT/bin/conda config --system --set pip_interop_enabled false && \
+    $CONDA_ROOT/bin/conda update -y -n base -c defaults conda && \
+    $CONDA_ROOT/bin/conda update -y setuptools && \
+    $CONDA_ROOT/bin/conda install -y conda-build && \
+    $CONDA_ROOT/bin/conda install -y --update-all python=$PYTHON_VERSION && \
+    ln -s $CONDA_ROOT/bin/python /usr/local/bin/python && \
+    ln -s $CONDA_ROOT/bin/conda /usr/bin/conda && \
+    $CONDA_ROOT/bin/conda install -y pip && \
+    $CONDA_ROOT/bin/pip install --upgrade pip && \
+    chmod -R a+rwx /usr/local/bin/ && \
+    $CONDA_ROOT/bin/conda clean -y --packages && \
+    $CONDA_ROOT/bin/conda clean -y -a -f && \
+    $CONDA_ROOT/bin/conda build purge-all && \
+    fix-permissions.sh $CONDA_ROOT && \
+    clean-layer.sh

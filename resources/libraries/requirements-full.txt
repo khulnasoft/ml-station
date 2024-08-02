@@ -76,6 +76,7 @@ gym==0.18.3
 holoviews==1.14.4
 hyperopt==0.2.5
 h5py==3.1.0
+httpie>=3.2.3
 # imageai==2.1.6
 imbalanced-learn==0.8.0
 imgaug==0.4.0
@@ -171,6 +172,7 @@ pytorch-nlp==0.5.0
 PyYAML==5.4.1
 pyzmq==22.1.0
 redis==3.5.3
+requests<=2.31.0
 requests-html==0.10.0
 rich==10.4.0
 rope==0.19.0
